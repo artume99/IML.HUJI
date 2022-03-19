@@ -2,12 +2,16 @@ from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
+
 pio.templates.default = "simple_white"
 
 
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
-    raise NotImplementedError()
+    X = np.random.normal(1, 10, 1000)
+    univar_guas = UnivariateGaussian()
+    univar_guas.fit(X)
+    print(univar_guas.mu_)
 
     # Question 2 - Empirically showing sample mean is consistent
     raise NotImplementedError()
@@ -30,4 +34,4 @@ def test_multivariate_gaussian():
 if __name__ == '__main__':
     np.random.seed(0)
     test_univariate_gaussian()
-    test_multivariate_gaussian()
+    # test_multivariate_gaussian()

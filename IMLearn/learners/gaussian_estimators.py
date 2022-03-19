@@ -7,6 +7,7 @@ class UnivariateGaussian:
     """
     Class for univariate Gaussian Distribution Estimator
     """
+
     def __init__(self, biased_var: bool = False) -> UnivariateGaussian:
         """
         Estimator for univariate Gaussian mean and variance parameters
@@ -51,8 +52,14 @@ class UnivariateGaussian:
         Sets `self.mu_`, `self.var_` attributes according to calculated estimation (where
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        if self.biased_:
+            mu = X.mean() - 1 / X.size
+            sigma = (np.power((X - mu), 2)) / X.size
+        else:
+            mu = X.mean()
+            sigma = (np.power((X - mu), 2)) / (X.size - 1)
+        self.mu_ = mu
+        self.var_ = sigma
         self.fitted_ = True
         return self
 
@@ -76,7 +83,9 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        mekadem = 1 / (np.sqrt(self.var_ * 2 * np.pi))
+        mone = -np.square(X - self.mu_)
+        return mekadem * np.exp(mone / (2 * self.var_))
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
@@ -97,13 +106,16 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        mekadem = 1/(np.power((2*np.pi*sigma),X.size/2))
+        inside = -1/(2*sigma) * np.sum(np.square(X-mu))
+        return np.log(mekadem * np.exp(inside))
 
 
 class MultivariateGaussian:
     """
     Class for multivariate Gaussian Distribution Estimator
     """
+
     def __init__(self):
         """
         Initialize an instance of multivariate Gaussian estimator
