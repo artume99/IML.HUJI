@@ -1,13 +1,11 @@
 import itertools
 
-import matplotlib.pyplot as plt
-
 from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
 import plotly
 import plotly.io as pio
-from matplotlib import pyplot as pt
+from matplotlib import pyplot as plt
 
 pio.templates.default = "simple_white"
 
@@ -32,22 +30,22 @@ def test_univariate_gaussian():
     exception_estimator = np.array(exception_estimator)
     distances = np.abs(exception_estimator - TRUE_EXPECTED)
 
-    pt.plot(samples, distances, marker=".")
-    pt.grid(True)
-    pt.axhline(0, color='r', ls='--')
-    pt.title("Distance of the estimator from the real expected value \n calculated by increasing samples")
-    pt.xlabel("Number of samples")
-    pt.ylabel("Distance", size=15)
-    pt.show()
+    plt.plot(samples, distances, marker=".")
+    plt.grid(True)
+    plt.axhline(0, color='r', ls='--')
+    plt.title("Distance of the estimator from the real expected value \n calculated by increasing samples")
+    plt.xlabel("Number of samples")
+    plt.ylabel("Distance", size=15)
+    plt.show()
 
     # Question 3 - Plotting Empirical PDF of fitted model
     pdf = univar_guas.pdf(X)
-    pt.scatter(X, pdf, s=1)
-    pt.title("Distribution of the samples")
-    pt.xlabel("Value of samples")
-    pt.ylabel("PDF calculation", size=15)
-    pt.axvline(univar_guas.mu_, color='r', ls='--')
-    pt.show()
+    plt.scatter(X, pdf, s=1)
+    plt.title("Distribution of the samples")
+    plt.xlabel("Value of samples")
+    plt.ylabel("PDF calculation", size=15)
+    plt.axvline(univar_guas.mu_, color='r', ls='--')
+    plt.show()
 
 
 def fit_model(mu, sigma, samples, gaus) -> np.ndarray:
@@ -73,33 +71,36 @@ def test_multivariate_gaussian():
 
     # Question 5 - Likelihood evaluation
     f = np.linspace(-10, 10, 200)
+    likelyhoods = []
+    row = []
+    pre_f1 = f[0]
+    max_likelihood = float('-inf')
+    max_f1_f3 = ()
     for f1, f3 in itertools.product(f, f):
+        if f1 != pre_f1:
+            likelyhoods.append(row)
+            pre_f1 = f1
+            row = []
         mu = np.array([f1, 0, f3, 0])
         likelyhood = MultivariateGaussian.log_likelihood(mu, TRUE_COV, Y)
+        if likelyhood > max_likelihood:
+            max_likelihood = likelyhood
+            max_f1_f3 = (f1, f3)
+        row.append(likelyhood)
+    likelyhoods.append(row)
 
+    x, y = np.meshgrid(f, f)
+    fig, ax = plt.subplots()
+    c = ax.pcolormesh(x, y, likelyhoods, cmap='RdBu')
+    ax.set(title="Log likelihood of f1, f3 for \n mu = \"[f1, 0, f3, 0]\"", xlabel="f3", ylabel="f1")
+    fig.colorbar(c, ax=ax)
+    plt.show()
 
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
+    print(f'max likelihood achieved at {max_f1_f3}')
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # test_univariate_gaussian()
-    # x = np.array([[150, 45], [170, 74], [184, 79]])
-    # y = np.array([168, 66])
-
-    # z = np.array([[1, 3], [3, 5], [5, 7]])
-    # for_sum = np.ones((1, z.shape[0]))
-    # mean = x.mean(axis=0)
-    # central_matrix = x - mean[None, :]
-    # var = np.dot(central_matrix.T, central_matrix) / (x.shape[0] - 1)
-    # kl = MultivariateGaussian()
-    # Y = np.random.multivariate_normal([0, 0, 4, 0], [[1, 0.2, 0, 0.5], [0.2, 2, 0, 0], [0, 0, 1, 0], [0.5, 0, 0, 1]],
-    #                                   1000)
-    # print(Y.shape)
-    # for i in range(200 ** 2):
-    #     MultivariateGaussian.log_likelihood(np.array([0, 0, 4, 0]),
-    #                                         np.array([[1, 0.2, 0, 0.5], [0.1, 2, 0, 0], [0, 0, 1, 0], [0.5, 0, 0, 1]]),
-    #                                         Y)
-    #     print(i)
-    test_multivariate_gaussian()
+    test_univariate_gaussian()
+    # test_multivariate_gaussian()
