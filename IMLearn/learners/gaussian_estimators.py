@@ -106,9 +106,9 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        mekadem = 1 / (np.power((2 * np.pi * sigma), X.size / 2))
+        mekadem = 1 / (np.power((2 * np.pi * (sigma**2)), X.size / 2))
         inside = -1 / (2 * sigma) * np.sum(np.square(X - mu))
-        return np.log(mekadem * np.exp(inside))
+        return np.log(mekadem) + inside
 
     def __str__(self):
         return f'({self.mu_},{self.var_})'

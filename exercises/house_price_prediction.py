@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
+
 pio.templates.default = "simple_white"
 
 
@@ -23,7 +24,39 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    df = pd.read_csv(filename)
+
+    df.drop_duplicates(inplace=True)
+    df = df.loc[df.zipcode.notnull()]
+    df = split_zipcode(df)
+    df = split_date(df)
+    df.drop(["id", "date", "zipcode", "sqft_living"], inplace=True, axis=1)
+    df = df.loc[filters(df)]
+    df = df.loc[df.sqft_above / df.floors <= df.sqft_lot]  # Another filter to apply, we need floors > 0 first.
+    df["last_changed"] = np.maximum(df.yr_built, df.yr_renovated)
+    return df
+
+
+def split_zipcode(df: pd.DataFrame):
+    zipcodes = np.fromiter(set(df.zipcode), int)
+    indicators = (df.zipcode[:, None] == zipcodes).astype(np.int)
+    zip_column = pd.DataFrame(indicators, columns=zipcodes)
+    df = pd.concat([df, zip_column], axis=1)
+    return df
+
+def split_date(df: pd.DataFrame):
+    dates = df.date
+    dates = pd.concat([dates.str.slice(0, 4), dates.str.slice(4, 6)], axis=1)
+    dates.columns = ['year', 'month']
+    year, month = dates['year'], dates['month']
+    new_df = pd.concat([df, year], axis=1)
+    new_df = pd.concat([new_df, pd.get_dummies(month)], axis=1)
+    return new_df
+
+def filters(df: pd.DataFrame):
+    return (df.price >= 0) & (df.floors > 0) & (df.sqft_above > 300) & (df.sqft_basement >= 0) & (df.condition <= 5) & (
+            df.condition >= 1) & (df.view >= 0) & (df.view <= 4) & (df.sqft_basement <= df.sqft_lot) & \
+           (df.bathrooms > 0) & (df.yr_built <= 2022) & (df.yr_renovated <= 2022)
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -49,7 +82,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+    df = load_data("../datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
     raise NotImplementedError()
