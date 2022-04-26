@@ -116,11 +116,16 @@ def compare_gaussian_classifiers():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # x = np.array([[1, 2, -5, 4, -7], [1, 2, 5, 6, 2]])
-    # y = np.array([-1, 1])
+    # x = np.array([[1, 2, -5, 4, 1], [1, 2, 5, 6, 2], [1, 2, 5, 7, 1]])
+    # y = np.array([-1, 1, 1])
     # p = Perceptron()
     # p.fit(x, y)
     # p.predict(x)
+    X = np.array([[1, 2], [5, 4], [3, 2], [9, 1], [5, 5], [4, 2], [6, 3]])
+    y = np.array([1, 2, 2, 1, 5, 1, 5])
+    p = GaussianNaiveBayes()
+    p.fit(X, y)
+    print(p.predict(X))
 
-    run_perceptron()
+    # run_perceptron()
     # compare_gaussian_classifiers()
