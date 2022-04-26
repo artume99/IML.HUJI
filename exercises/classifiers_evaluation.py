@@ -1,9 +1,12 @@
+import numpy as np
+
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 from typing import Tuple
 from utils import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from math import atan2, pi
+import matplotlib.pyplot as plt
 
 
 def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -36,16 +39,27 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"),
+                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        data = load_dataset(f'../datasets/{f}')
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
 
-        # Plot figure of loss as function of fitting iteration
-        raise NotImplementedError()
+        def callback(fit: Perceptron, x: np.ndarray, y: int):
+            losses.append(fit._loss(data[0], data[1]))
+
+        perceptron = Perceptron(callback=callback)
+        perceptron.fit(data[0], data[1])
+
+        # region Plot figure of loss as function of fitting iteration
+        plt.plot(losses)
+        plt.title(f'Perceptron misclassification loss per Iteration \n for {n}')
+        plt.xlabel("Iterations")
+        plt.ylabel("Missclassification Loss", size=15)
+        plt.show()
+        # endregion
 
 
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
@@ -102,5 +116,11 @@ def compare_gaussian_classifiers():
 
 if __name__ == '__main__':
     np.random.seed(0)
+    # x = np.array([[1, 2, -5, 4, -7], [1, 2, 5, 6, 2]])
+    # y = np.array([-1, 1])
+    # p = Perceptron()
+    # p.fit(x, y)
+    # p.predict(x)
+
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()

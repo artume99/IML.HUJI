@@ -31,6 +31,7 @@ class Perceptron(BaseEstimator):
             A callable to be called after each update of the model while fitting to given data
             Callable function should receive as input a Perceptron instance, current sample and current response
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
@@ -63,7 +64,7 @@ class Perceptron(BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        new_X : ndarray of shape (n_samples, n_features)
             Input data to fit an estimator for
 
         y : ndarray of shape (n_samples, )
@@ -73,7 +74,18 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        new_X = X
+        if self.include_intercept_:
+            new_X = np.concatenate((np.ones((new_X.shape[0], 1)), new_X), axis=1)
+        self.coefs_ = np.zeros(new_X.shape[1])
+        for t in range(self.max_iter_):
+            prediction = y * np.inner(self.coefs_, new_X)
+            error = np.argwhere(prediction <= 0)
+            if error.size == 0:
+                break
+            i = error[0][0]
+            self.coefs_ = self.coefs_ + y[i] * new_X[i]
+            self.callback_(self, new_X[i], y[i])
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -89,7 +101,9 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = np.concatenate((np.ones((X.shape[0], 1)), X), axis=1)
+        return np.where(np.inner(X, self.coefs_) >= 0, 1, -1)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -109,4 +123,4 @@ class Perceptron(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        return misclassification_error(y, self._predict(X))
