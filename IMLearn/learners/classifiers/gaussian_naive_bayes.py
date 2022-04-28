@@ -2,10 +2,12 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 
+
 class GaussianNaiveBayes(BaseEstimator):
     """
     Gaussian Naive-Bayes classifier
     """
+
     def __init__(self):
         """
         Instantiate a Gaussian Naive Bayes classifier
@@ -54,10 +56,11 @@ class GaussianNaiveBayes(BaseEstimator):
 
         vars = []
         for k in self.classes_:
-            curr_vars = conc_X[np.where(conc_X[:, conc_X.shape[1] - 1] == k)[0]].var(axis=0)
+            curr_vars = conc_X[np.where(conc_X[:, conc_X.shape[1] - 1] == k)[0]].var(axis=0, ddof=1)
             vars.append(curr_vars[:curr_vars.shape[0] - 1])
         self.vars_ = np.array(vars)
 
+        print(self.vars_)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -96,13 +99,11 @@ class GaussianNaiveBayes(BaseEstimator):
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
         likelihoods = []
-        from numpy.linalg import det, inv
         for k in range(self.classes_.size):
-            cov = np.diag(self.vars_[k])
-            mekadem = np.sqrt(det(cov) * (2 * np.pi) ** X.shape[1])
-            difference = (X - self.mu_[k])
-            inside = np.diag(np.exp(np.dot(np.dot(-.5 * difference, inv(cov)), difference.T)))
+            mekadem = np.sqrt(self.vars_[k] * 2 * np.pi)
+            inside = np.exp(-(np.square(X - self.mu_[k]) / (2 * self.vars_[k])))
             likelihood = inside / mekadem
+            likelihood = np.product(likelihood, axis=1)
             likelihoods.append(likelihood)
 
         likelihoods = np.array(likelihoods).T

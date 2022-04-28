@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+import matplotlib.axes
 import numpy as np
 
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
@@ -93,39 +96,74 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        data = load_dataset(f'../datasets/{f}')
+        x = data[0]
+        y = data[1]
 
         # Fit models and predict over training set
-        raise NotImplementedError()
+        lda = LDA()
+        gnb = GaussianNaiveBayes()
+        lda.fit(x, y)
+        gnb.fit(x, y)
+        pred_lda = lda.predict(x)
+        pred_gnb = gnb.predict(x)
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         # Create subplots
         from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+        accuracy_lda = accuracy(y, pred_lda)
+        accuracy_gnb = accuracy(y, pred_gnb)
+
+        lda_title = f"LDA classification with \n accuracy = {accuracy_lda}"
+        gnb_title = f'GaussianNaiveBayes classification with \n accuracy = {accuracy_gnb}'
+        fig = make_subplots(rows=1, cols=2, subplot_titles=(gnb_title, lda_title))
+        fig.update_layout(title_text="Classification by different models")
+        fig.update_xaxes(title_text="feature1", row=1, col=1)
+        fig.update_xaxes(title_text="feature1", row=1, col=2)
+        fig.update_yaxes(title_text="feature2", row=1, col=1)
+        fig.update_yaxes(title_text="feature2", row=1, col=2)
 
         # Add traces for data-points setting symbols and colors
-        raise NotImplementedError()
+        fig.add_trace(
+            go.Scatter(mode='markers', x=x[:, 0], y=x[:, 1],
+                       marker=dict(color=pred_gnb, symbol=y, size=10)),
+            row=1, col=1
+        )
+        fig.add_trace(
+            go.Scatter(mode='markers', x=x[:, 0], y=x[:, 1],
+                       marker=dict(color=pred_lda, symbol=y, size=10)),
+            row=1, col=2
+        )
 
         # Add `X` dots specifying fitted Gaussians' means
-        raise NotImplementedError()
+        fig.add_trace(
+            go.Scatter(mode='markers', x=gnb.mu_[:, 0], y=gnb.mu_[:, 1],
+                       marker=dict(color='black', symbol='x')),
+            row=1, col=1
+        )
+        fig.add_trace(
+            go.Scatter(mode='markers', x=lda.mu_[:, 0], y=lda.mu_[:, 1],
+                       marker=dict(color='black', symbol='x')),
+            row=1, col=2
+        )
 
         # Add ellipses depicting the covariances of the fitted Gaussians
-        raise NotImplementedError()
+        fig.add_traces([get_ellipse(gnb.mu_[i], np.diag(gnb.vars_[i]))
+                        for i in range(gnb.classes_.size)], rows=1, cols=1)
+
+        fig.add_traces([get_ellipse(lda.mu_[i], lda.cov_)
+                        for i in range(lda.classes_.size)], rows=1, cols=2)
+        fig.show()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # x = np.array([[1, 2, -5, 4, 1], [1, 2, 5, 6, 2], [1, 2, 5, 7, 1]])
-    # y = np.array([-1, 1, 1])
-    # p = Perceptron()
-    # p.fit(x, y)
-    # p.predict(x)
-    X = np.array([[1, 2], [5, 4], [3, 2], [9, 1], [5, 5], [4, 2], [6, 3]])
-    y = np.array([1, 2, 2, 1, 5, 1, 5])
+
+    X = np.array([[1, 1], [1, 2], [2, 3], [2, 4], [3, 3], [3, 4]])
+    y = np.array([0, 0, 1, 1, 1, 1])
     p = GaussianNaiveBayes()
     p.fit(X, y)
-    print(p.predict(X))
 
-    # run_perceptron()
+    run_perceptron()
     # compare_gaussian_classifiers()
