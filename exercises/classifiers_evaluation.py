@@ -160,10 +160,5 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
 
-    X = np.array([[1, 1], [1, 2], [2, 3], [2, 4], [3, 3], [3, 4]])
-    y = np.array([0, 0, 1, 1, 1, 1])
-    p = GaussianNaiveBayes()
-    p.fit(X, y)
-
     run_perceptron()
     compare_gaussian_classifiers()
