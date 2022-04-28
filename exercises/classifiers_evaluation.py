@@ -166,4 +166,4 @@ if __name__ == '__main__':
     p.fit(X, y)
 
     run_perceptron()
-    # compare_gaussian_classifiers()
+    compare_gaussian_classifiers()
